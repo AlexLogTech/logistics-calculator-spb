@@ -66,10 +66,7 @@
             <!-- Distance & Zone Card -->
             <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-xl backdrop-blur-md space-y-4">
                 <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Расстояние (км)</label>
-                        <span id="base-point-label" class="text-[10px] text-amber-400/90 hidden">База: Газобетон СК (Грузовой пр. 13)</span>
-                    </div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Расстояние (км)</label>
                     <div class="relative">
                         <input type="number" id="distance" placeholder="0" min="0" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-lg font-bold text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-medium">км</span>
@@ -270,7 +267,6 @@
         const manipulatorTypeCard = document.getElementById('manipulator-type-card');
         const btnManip10 = document.getElementById('btn-manip-10');
         const btnManip20 = document.getElementById('btn-manip-20');
-        const basePointLabel = document.getElementById('base-point-label');
 
         const distanceInput = document.getElementById('distance');
         const zoneSelect = document.getElementById('zone');
@@ -303,7 +299,6 @@
             tabShalanda.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 bg-blue-600 text-white shadow-md";
             tabManipulator.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 text-slate-400 hover:text-white";
             manipulatorTypeCard.classList.add('hidden');
-            basePointLabel.classList.add('hidden');
             calculate();
         });
 
@@ -312,7 +307,6 @@
             tabManipulator.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 bg-blue-600 text-white shadow-md";
             tabShalanda.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 text-slate-400 hover:text-white";
             manipulatorTypeCard.classList.remove('hidden');
-            basePointLabel.classList.remove('hidden');
             calculate();
         });
 
@@ -369,7 +363,7 @@
                     } else if (distance > 165) {
                         const lastRow = shalandaRates[shalandaRates.length - 1];
                         basePrice = lastRow.price;
-                        rangeText = `>165 км (договорная)`;
+                        rangeText = `>165 км`;
                     }
                 }
             } else {
@@ -381,7 +375,7 @@
                     } else if (distance > 100) {
                         const lastRow = manipulatorRates[manipulatorRates.length - 1];
                         basePrice = manipulatorCapacity === 10 ? lastRow.cap10 : lastRow.cap20;
-                        rangeText = `>100 км (договорная)`;
+                        rangeText = `>100 км`;
                     }
                 }
             }
@@ -418,14 +412,12 @@
             let report = `🚚 Расчет перевозки:\n`;
             if (activeTransport === 'shalanda') {
                 report += `• Транспорт: Шаланда 13.6 м (с НДС)\n`;
-                report += `• Расстояние: ${distance} км (${rangeText})\n`;
-                report += `• Базовый тариф: ${basePrice.toLocaleString('ru-RU')} ₽\n`;
             } else {
                 report += `• Транспорт: Манипулятор до ${manipulatorCapacity} тн (с НДС 22%)\n`;
-                report += `• База: Газобетон СК (Грузовой пр. 13)\n`;
-                report += `• Расстояние: ${distance} км (${rangeText})\n`;
-                report += `• Базовый тариф: ${basePrice.toLocaleString('ru-RU')} ₽\n`;
             }
+
+            report += `• Расстояние: ${distance} км (${rangeText})\n`;
+            report += `• Базовый тариф: ${basePrice.toLocaleString('ru-RU')} ₽\n`;
 
             if (zoneFee > 0) {
                 const selectedZoneText = zoneSelect.options[zoneSelect.selectedIndex].text;
