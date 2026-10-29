@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AlexLogTech — Калькулятор логистики и простоя (СПб / ЛО)</title>
+    <title>Калькулятор логистики — AlexLogTech</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -15,12 +15,12 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="h-full text-slate-100 antialiased selection:bg-blue-500 selection:text-white">
+<body class="h-full text-slate-100 antialiased selection:bg-blue-500 selection:text-white pb-6">
 
     <div class="min-h-full flex flex-col justify-between max-w-md mx-auto p-4 sm:p-6">
         
         <!-- Header -->
-        <header class="mb-5 flex items-center justify-between">
+        <header class="mb-4 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="p-2.5 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/30">
                     <i data-lucide="truck" class="w-6 h-6"></i>
@@ -35,13 +35,41 @@
             </button>
         </header>
 
+        <!-- Transport Tabs Switcher -->
+        <div class="mb-4 bg-slate-800/90 p-1.5 rounded-2xl border border-slate-700/80 flex space-x-1 shadow-lg">
+            <button id="tab-shalanda" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 bg-blue-600 text-white shadow-md">
+                <i data-lucide="container" class="w-4 h-4"></i>
+                <span>Шаланда 20 тн</span>
+            </button>
+            <button id="tab-manipulator" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 text-slate-400 hover:text-white">
+                <i data-lucide="crane" class="w-4 h-4"></i>
+                <span>Манипулятор</span>
+            </button>
+        </div>
+
         <!-- Main Form -->
         <main class="space-y-4">
             
+            <!-- Manipulator Type Selector (Hidden in Shalanda mode) -->
+            <div id="manipulator-type-card" class="hidden bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-xl backdrop-blur-md">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Грузоподъемность манипулятора</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btn-manip-10" class="py-2.5 px-3 border border-blue-500/50 bg-blue-600/20 text-blue-300 font-bold rounded-xl text-xs transition-all text-center">
+                        До 10 тонн (с НДС)
+                    </button>
+                    <button id="btn-manip-20" class="py-2.5 px-3 border border-slate-700 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs transition-all text-center hover:text-white">
+                        До 20 тонн (с НДС)
+                    </button>
+                </div>
+            </div>
+
             <!-- Distance & Zone Card -->
             <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-xl backdrop-blur-md space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Расстояние (км)</label>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Расстояние (км)</label>
+                        <span id="base-point-label" class="text-[10px] text-amber-400/90 hidden">База: Газобетон СК (Грузовой пр. 13)</span>
+                    </div>
                     <div class="relative">
                         <input type="number" id="distance" placeholder="0" min="0" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-lg font-bold text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-medium">км</span>
@@ -55,18 +83,15 @@
                     </select>
                 </div>
 
-                <!-- Separate ZSD Toll Road Switch -->
+                <!-- ZSD Toggle -->
                 <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between">
-                    <div class="flex items-center space-x-2.5">
-                        <i data-lucide="navigation-2" class="w-4 h-4 text-blue-400"></i>
-                        <div>
-                            <span class="text-sm font-semibold text-slate-200">Проезд по ЗСД</span>
-                            <span id="zsd-rate-label" class="block text-[11px] text-slate-400">+2 000 ₽</span>
-                        </div>
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="navigation" class="w-4 h-4 text-blue-400"></i>
+                        <span class="text-xs font-medium text-slate-200">Проезд по ЗСД (+2 000 ₽)</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="zsd-toggle" class="sr-only peer">
-                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                 </div>
             </div>
@@ -99,7 +124,7 @@
                         </div>
                     </div>
                     <p id="idle-info-text" class="text-[11px] text-slate-400 leading-tight">
-                        Норма разгрузки: 1 час бесплатно. Далее 1 500 ₽/час ($60\text{ мин} = 1.0$).
+                        Норма разгрузки: 1 час бесплатно. Далее 1 500 ₽/час.
                     </p>
                 </div>
 
@@ -146,7 +171,7 @@
             <div class="flex justify-between items-center pb-3 border-b border-slate-800">
                 <h2 class="text-base font-bold text-white flex items-center space-x-2">
                     <i data-lucide="sliders" class="w-5 h-5 text-blue-400"></i>
-                    <span>Настройка тарифов</span>
+                    <span>Настройка тарифов Шаланды</span>
                 </h2>
                 <button id="close-settings-btn" class="text-slate-400 hover:text-white p-1">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -163,7 +188,7 @@
                     <input type="number" id="cfg-per-km" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Стоимость проезда по ЗСД (руб)</label>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Тариф ЗСД (руб)</label>
                     <input type="number" id="cfg-zsd-fee" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
@@ -185,7 +210,6 @@
 
     <!-- Application Logic -->
     <script>
-        // Init Lucide Icons
         lucide.createIcons();
 
         // Default Config
@@ -202,14 +226,33 @@
             ]
         };
 
-        // Load or Init Config from LocalStorage
-        let config = JSON.parse(localStorage.getItem('alexlogtech_config')) || defaultConfig;
+        // Manipulator Matrix (From Table)
+        const manipulatorRates = [
+            { min: 0, max: 20, cap10: 17000, cap20: 25000 },
+            { min: 21, max: 40, cap10: 18500, cap20: 25000 },
+            { min: 41, max: 50, cap10: 20000, cap20: 27000 },
+            { min: 51, max: 60, cap10: 21000, cap20: 29000 },
+            { min: 61, max: 70, cap10: 23000, cap20: 31000 },
+            { min: 71, max: 80, cap10: 25500, cap20: 34000 },
+            { min: 81, max: 90, cap10: 27000, cap20: 35000 },
+            { min: 91, max: 100, cap10: 28000, cap20: 37000 }
+        ];
 
-        // Elements
+        let config = JSON.parse(localStorage.getItem('alexlogtech_config')) || defaultConfig;
+        let activeTransport = 'shalanda'; // 'shalanda' or 'manipulator'
+        let manipulatorCapacity = 10; // 10 or 20
+
+        // DOM Elements
+        const tabShalanda = document.getElementById('tab-shalanda');
+        const tabManipulator = document.getElementById('tab-manipulator');
+        const manipulatorTypeCard = document.getElementById('manipulator-type-card');
+        const btnManip10 = document.getElementById('btn-manip-10');
+        const btnManip20 = document.getElementById('btn-manip-20');
+        const basePointLabel = document.getElementById('base-point-label');
+
         const distanceInput = document.getElementById('distance');
         const zoneSelect = document.getElementById('zone');
         const zsdToggle = document.getElementById('zsd-toggle');
-        const zsdRateLabel = document.getElementById('zsd-rate-label');
         const idleToggle = document.getElementById('idle-toggle');
         const idleContainer = document.getElementById('idle-container');
         const timeInInput = document.getElementById('time-in');
@@ -234,7 +277,40 @@
         const cfgFreeMinutes = document.getElementById('cfg-free-minutes');
         const cfgIdleRate = document.getElementById('cfg-idle-rate');
 
-        // Populate Zone Dropdown
+        // Tab Switching
+        tabShalanda.addEventListener('click', () => {
+            activeTransport = 'shalanda';
+            tabShalanda.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 bg-blue-600 text-white shadow-md";
+            tabManipulator.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 text-slate-400 hover:text-white";
+            manipulatorTypeCard.classList.add('hidden');
+            basePointLabel.classList.add('hidden');
+            calculate();
+        });
+
+        tabManipulator.addEventListener('click', () => {
+            activeTransport = 'manipulator';
+            tabManipulator.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 bg-blue-600 text-white shadow-md";
+            tabShalanda.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 text-slate-400 hover:text-white";
+            manipulatorTypeCard.classList.remove('hidden');
+            basePointLabel.classList.remove('hidden');
+            calculate();
+        });
+
+        // Manipulator Sub-tabs
+        btnManip10.addEventListener('click', () => {
+            manipulatorCapacity = 10;
+            btnManip10.className = "py-2.5 px-3 border border-blue-500/50 bg-blue-600/20 text-blue-300 font-bold rounded-xl text-xs transition-all text-center";
+            btnManip20.className = "py-2.5 px-3 border border-slate-700 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs transition-all text-center hover:text-white";
+            calculate();
+        });
+
+        btnManip20.addEventListener('click', () => {
+            manipulatorCapacity = 20;
+            btnManip20.className = "py-2.5 px-3 border border-blue-500/50 bg-blue-600/20 text-blue-300 font-bold rounded-xl text-xs transition-all text-center";
+            btnManip10.className = "py-2.5 px-3 border border-slate-700 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs transition-all text-center hover:text-white";
+            calculate();
+        });
+
         function populateZones() {
             zoneSelect.innerHTML = '';
             config.zones.forEach(z => {
@@ -243,10 +319,8 @@
                 opt.textContent = z.name;
                 zoneSelect.appendChild(opt);
             });
-            zsdRateLabel.textContent = `+${config.zsdFee.toLocaleString('ru-RU')} ₽`;
         }
 
-        // Toggle Idle Section Visibility
         idleToggle.addEventListener('change', () => {
             if (idleToggle.checked) {
                 idleContainer.classList.remove('hidden');
@@ -258,53 +332,80 @@
             calculate();
         });
 
-        // Main Calculation
+        // Main Calculation Logic
         function calculate() {
             const distance = parseFloat(distanceInput.value) || 0;
             const zoneFee = parseFloat(zoneSelect.value) || 0;
-            const zsdCost = zsdToggle.checked ? (config.zsdFee || 2000) : 0;
+            const zsdFee = zsdToggle.checked ? (config.zsdFee || 2000) : 0;
             
-            // Base Delivery Calculation
-            let basePrice = distance > 0 ? Math.max(config.minPrice, distance * config.perKmRate) : 0;
+            let basePrice = 0;
+            let rangeText = "";
+
+            if (activeTransport === 'shalanda') {
+                basePrice = distance > 0 ? Math.max(config.minPrice, distance * config.perKmRate) : 0;
+            } else {
+                // Manipulator Logic
+                if (distance > 0) {
+                    const row = manipulatorRates.find(r => distance >= r.min && distance <= r.max);
+                    if (row) {
+                        basePrice = manipulatorCapacity === 10 ? row.cap10 : row.cap20;
+                        rangeText = `${row.min}-${row.max} км`;
+                    } else if (distance > 100) {
+                        // Beyond 100 km (base 100km rate)
+                        const lastRow = manipulatorRates[manipulatorRates.length - 1];
+                        basePrice = manipulatorCapacity === 10 ? lastRow.cap10 : lastRow.cap20;
+                        rangeText = `>100 км (базовый тариф)`;
+                    }
+                }
+            }
+
+            // Idle Time
             let idlePrice = 0;
             let idleCoeff = 0;
             let idleMinutes = 0;
 
-            // Idle Calculation if Enabled
             if (idleToggle.checked && timeInInput.value && timeOutInput.value) {
                 const [hIn, mIn] = timeInInput.value.split(':').map(Number);
                 const [hOut, mOut] = timeOutInput.value.split(':').map(Number);
                 
                 let totalMinutes = (hOut * 60 + mOut) - (hIn * 60 + mIn);
-                if (totalMinutes < 0) totalMinutes += 24 * 60; // Midnight rollover
+                if (totalMinutes < 0) totalMinutes += 24 * 60;
 
                 idleMinutes = Math.max(0, totalMinutes - config.freeMinutes);
                 idleCoeff = (idleMinutes / 60).toFixed(2);
                 idlePrice = Math.round((idleMinutes / 60) * config.idleHourlyRate);
             }
 
-            const totalPrice = basePrice + zoneFee + zsdCost + idlePrice;
+            const totalPrice = basePrice + zoneFee + zsdFee + idlePrice;
 
-            // Update UI
             totalPriceEl.textContent = `${totalPrice.toLocaleString('ru-RU')} ₽`;
             idleCoeffEl.textContent = idleCoeff;
             idleInfoText.textContent = `Норма разгрузки: ${config.freeMinutes} мин бесплатно. Далее ${config.idleHourlyRate.toLocaleString('ru-RU')} ₽/час.`;
 
-            // Report Generation
             if (distance === 0) {
                 reportTextEl.textContent = "Укажите расстояние для расчета...";
                 return;
             }
 
+            // Report Text Generation
             let report = `🚚 Расчет перевозки:\n`;
-            report += `• Расстояние: ${distance} км\n`;
-            report += `• Базовый тариф: ${basePrice.toLocaleString('ru-RU')} ₽\n`;
+            if (activeTransport === 'shalanda') {
+                report += `• Транспорт: Шаланда 20 тн\n`;
+                report += `• Расстояние: ${distance} км\n`;
+                report += `• Базовый тариф: ${basePrice.toLocaleString('ru-RU')} ₽\n`;
+            } else {
+                report += `• Транспорт: Манипулятор до ${manipulatorCapacity} тн (с НДС 22%)\n`;
+                report += `• База: Газобетон СК (Грузовой пр. 13)\n`;
+                report += `• Зона: ${distance} км (${rangeText})\n`;
+                report += `• Базовый тариф: ${basePrice.toLocaleString('ru-RU')} ₽\n`;
+            }
+
             if (zoneFee > 0) {
                 const selectedZoneText = zoneSelect.options[zoneSelect.selectedIndex].text;
-                report += `• Спец. район: ${zoneFee.toLocaleString('ru-RU')} ₽ (${selectedZoneText.split(' (')[0]})\n`;
+                report += `• Надбавка: ${zoneFee.toLocaleString('ru-RU')} ₽ (${selectedZoneText.split(' (')[0]})\n`;
             }
             if (zsdToggle.checked) {
-                report += `• Проезд по ЗСД: ${zsdCost.toLocaleString('ru-RU')} ₽\n`;
+                report += `• Проезд по ЗСД: ${zsdFee.toLocaleString('ru-RU')} ₽\n`;
             }
             if (idleToggle.checked && idleMinutes > 0) {
                 report += `• Простой: ${idleMinutes} мин (коэфф. 1С: ${idleCoeff}) — ${idlePrice.toLocaleString('ru-RU')} ₽\n`;
@@ -314,7 +415,7 @@
             reportTextEl.textContent = report;
         }
 
-        // Settings Modal Handlers
+        // Modal Handlers
         openSettingsBtn.addEventListener('click', () => {
             cfgMinPrice.value = config.minPrice;
             cfgPerKm.value = config.perKmRate;
@@ -335,7 +436,6 @@
 
             localStorage.setItem('alexlogtech_config', JSON.stringify(config));
             settingsModal.classList.add('hidden');
-            populateZones();
             calculate();
         });
 
@@ -347,7 +447,7 @@
             calculate();
         });
 
-        // Copy Handler
+        // Copy
         copyBtn.addEventListener('click', () => {
             const text = reportTextEl.textContent;
             if (text && !text.includes("Укажите расстояние")) {
@@ -362,14 +462,12 @@
             }
         });
 
-        // Event Listeners
         distanceInput.addEventListener('input', calculate);
         zoneSelect.addEventListener('change', calculate);
         zsdToggle.addEventListener('change', calculate);
         timeInInput.addEventListener('change', calculate);
         timeOutInput.addEventListener('change', calculate);
 
-        // Init App
         populateZones();
         calculate();
     </script>
