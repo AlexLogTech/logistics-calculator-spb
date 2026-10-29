@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Калькулятор логистики и простоя (СПб / ЛО)</title>
+    <title>AlexLogTech — Калькулятор логистики и простоя (СПб / ЛО)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -54,6 +54,21 @@
                         <!-- Populated by JS -->
                     </select>
                 </div>
+
+                <!-- Separate ZSD Toll Road Switch -->
+                <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between">
+                    <div class="flex items-center space-x-2.5">
+                        <i data-lucide="navigation-2" class="w-4 h-4 text-blue-400"></i>
+                        <div>
+                            <span class="text-sm font-semibold text-slate-200">Проезд по ЗСД</span>
+                            <span id="zsd-rate-label" class="block text-[11px] text-slate-400">+2 000 ₽</span>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="zsd-toggle" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
             </div>
 
             <!-- Idle Time Toggle & Block -->
@@ -84,7 +99,7 @@
                         </div>
                     </div>
                     <p id="idle-info-text" class="text-[11px] text-slate-400 leading-tight">
-                        Норма разгрузки: 1 час бесплатно. Далее 1 500 ₽/час.
+                        Норма разгрузки: 1 час бесплатно. Далее 1 500 ₽/час ($60\text{ мин} = 1.0$).
                     </p>
                 </div>
 
@@ -148,6 +163,10 @@
                     <input type="number" id="cfg-per-km" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
                 <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Стоимость проезда по ЗСД (руб)</label>
+                    <input type="number" id="cfg-zsd-fee" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                </div>
+                <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Бесплатное время простоя (мин)</label>
                     <input type="number" id="cfg-free-minutes" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
                 </div>
@@ -173,13 +192,13 @@
         const defaultConfig = {
             minPrice: 3000,
             perKmRate: 80,
+            zsdFee: 2000,
             freeMinutes: 60,
             idleHourlyRate: 1500,
             zones: [
                 { name: "Стандартный маршрут (Без надбавки)", fee: 0 },
                 { name: "Центр (Центральный, Петроградский и др.) (+1 500 ₽)", fee: 1500 },
-                { name: "КАД Север / Курортный р-н (+2 000 ₽)", fee: 2000 },
-                { name: "ЗСД / Платный участок (+1 000 ₽)", fee: 1000 }
+                { name: "КАД Север / Курортный р-н (+2 000 ₽)", fee: 2000 }
             ]
         };
 
@@ -189,6 +208,8 @@
         // Elements
         const distanceInput = document.getElementById('distance');
         const zoneSelect = document.getElementById('zone');
+        const zsdToggle = document.getElementById('zsd-toggle');
+        const zsdRateLabel = document.getElementById('zsd-rate-label');
         const idleToggle = document.getElementById('idle-toggle');
         const idleContainer = document.getElementById('idle-container');
         const timeInInput = document.getElementById('time-in');
@@ -209,6 +230,7 @@
 
         const cfgMinPrice = document.getElementById('cfg-min-price');
         const cfgPerKm = document.getElementById('cfg-per-km');
+        const cfgZsdFee = document.getElementById('cfg-zsd-fee');
         const cfgFreeMinutes = document.getElementById('cfg-free-minutes');
         const cfgIdleRate = document.getElementById('cfg-idle-rate');
 
@@ -221,6 +243,7 @@
                 opt.textContent = z.name;
                 zoneSelect.appendChild(opt);
             });
+            zsdRateLabel.textContent = `+${config.zsdFee.toLocaleString('ru-RU')} ₽`;
         }
 
         // Toggle Idle Section Visibility
@@ -239,6 +262,7 @@
         function calculate() {
             const distance = parseFloat(distanceInput.value) || 0;
             const zoneFee = parseFloat(zoneSelect.value) || 0;
+            const zsdCost = zsdToggle.checked ? (config.zsdFee || 2000) : 0;
             
             // Base Delivery Calculation
             let basePrice = distance > 0 ? Math.max(config.minPrice, distance * config.perKmRate) : 0;
@@ -259,7 +283,7 @@
                 idlePrice = Math.round((idleMinutes / 60) * config.idleHourlyRate);
             }
 
-            const totalPrice = basePrice + zoneFee + idlePrice;
+            const totalPrice = basePrice + zoneFee + zsdCost + idlePrice;
 
             // Update UI
             totalPriceEl.textContent = `${totalPrice.toLocaleString('ru-RU')} ₽`;
@@ -277,7 +301,10 @@
             report += `• Базовый тариф: ${basePrice.toLocaleString('ru-RU')} ₽\n`;
             if (zoneFee > 0) {
                 const selectedZoneText = zoneSelect.options[zoneSelect.selectedIndex].text;
-                report += `• Надбавка: ${zoneFee.toLocaleString('ru-RU')} ₽ (${selectedZoneText.split(' (')[0]})\n`;
+                report += `• Спец. район: ${zoneFee.toLocaleString('ru-RU')} ₽ (${selectedZoneText.split(' (')[0]})\n`;
+            }
+            if (zsdToggle.checked) {
+                report += `• Проезд по ЗСД: ${zsdCost.toLocaleString('ru-RU')} ₽\n`;
             }
             if (idleToggle.checked && idleMinutes > 0) {
                 report += `• Простой: ${idleMinutes} мин (коэфф. 1С: ${idleCoeff}) — ${idlePrice.toLocaleString('ru-RU')} ₽\n`;
@@ -291,6 +318,7 @@
         openSettingsBtn.addEventListener('click', () => {
             cfgMinPrice.value = config.minPrice;
             cfgPerKm.value = config.perKmRate;
+            cfgZsdFee.value = config.zsdFee || 2000;
             cfgFreeMinutes.value = config.freeMinutes;
             cfgIdleRate.value = config.idleHourlyRate;
             settingsModal.classList.remove('hidden');
@@ -301,11 +329,13 @@
         saveSettingsBtn.addEventListener('click', () => {
             config.minPrice = parseFloat(cfgMinPrice.value) || 0;
             config.perKmRate = parseFloat(cfgPerKm.value) || 0;
+            config.zsdFee = parseFloat(cfgZsdFee.value) || 0;
             config.freeMinutes = parseFloat(cfgFreeMinutes.value) || 0;
             config.idleHourlyRate = parseFloat(cfgIdleRate.value) || 0;
 
             localStorage.setItem('alexlogtech_config', JSON.stringify(config));
             settingsModal.classList.add('hidden');
+            populateZones();
             calculate();
         });
 
@@ -335,6 +365,7 @@
         // Event Listeners
         distanceInput.addEventListener('input', calculate);
         zoneSelect.addEventListener('change', calculate);
+        zsdToggle.addEventListener('change', calculate);
         timeInInput.addEventListener('change', calculate);
         timeOutInput.addEventListener('change', calculate);
 
