@@ -39,7 +39,7 @@
         <div class="mb-4 bg-slate-800/90 p-1.5 rounded-2xl border border-slate-700/80 flex space-x-1 shadow-lg">
             <button id="tab-shalanda" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 bg-blue-600 text-white shadow-md">
                 <i data-lucide="container" class="w-4 h-4"></i>
-                <span>Шаланда 20 тн</span>
+                <span>Шаланда 13.6 м</span>
             </button>
             <button id="tab-manipulator" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 text-slate-400 hover:text-white">
                 <i data-lucide="crane" class="w-4 h-4"></i>
@@ -111,7 +111,7 @@
                     </label>
                 </div>
 
-                <!-- Idle Time Fields (Hidden by default) -->
+                <!-- Idle Time Fields -->
                 <div id="idle-container" class="hidden space-y-3 pt-3 border-t border-slate-700/60">
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -165,13 +165,13 @@
         </footer>
     </div>
 
-    <!-- Tariff Settings Modal -->
+    <!-- Settings Modal -->
     <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl max-h-[90vh] overflow-y-auto space-y-4">
             <div class="flex justify-between items-center pb-3 border-b border-slate-800">
                 <h2 class="text-base font-bold text-white flex items-center space-x-2">
                     <i data-lucide="sliders" class="w-5 h-5 text-blue-400"></i>
-                    <span>Настройка тарифов Шаланды</span>
+                    <span>Настройки условий</span>
                 </h2>
                 <button id="close-settings-btn" class="text-slate-400 hover:text-white p-1">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -179,14 +179,6 @@
             </div>
 
             <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Мин. стоимость доставки (руб)</label>
-                    <input type="number" id="cfg-min-price" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Ставка за 1 км (руб)</label>
-                    <input type="number" id="cfg-per-km" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
-                </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Тариф ЗСД (руб)</label>
                     <input type="number" id="cfg-zsd-fee" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
@@ -212,21 +204,40 @@
     <script>
         lucide.createIcons();
 
-        // Default Config
-        const defaultConfig = {
-            minPrice: 3000,
-            perKmRate: 80,
-            zsdFee: 2000,
-            freeMinutes: 60,
-            idleHourlyRate: 1500,
-            zones: [
-                { name: "Стандартный маршрут (Без надбавки)", fee: 0 },
-                { name: "Центр (Центральный, Петроградский и др.) (+1 500 ₽)", fee: 1500 },
-                { name: "КАД Север / Курортный р-н (+2 000 ₽)", fee: 2000 }
-            ]
-        };
+        // Exact Shalanda Rates Table (13.6m with VAT)
+        const shalandaRates = [
+            { min: 0, max: 25, price: 16500 },
+            { min: 26, max: 30, price: 17000 },
+            { min: 31, max: 35, price: 17500 },
+            { min: 36, max: 40, price: 18000 },
+            { min: 41, max: 45, price: 18500 },
+            { min: 46, max: 50, price: 19000 },
+            { min: 51, max: 55, price: 19500 },
+            { min: 56, max: 60, price: 20000 },
+            { min: 61, max: 65, price: 20500 },
+            { min: 66, max: 70, price: 21000 },
+            { min: 71, max: 75, price: 21500 },
+            { min: 76, max: 80, price: 22000 },
+            { min: 81, max: 85, price: 22500 },
+            { min: 86, max: 90, price: 24000 },
+            { min: 91, max: 95, price: 24500 },
+            { min: 96, max: 100, price: 25000 },
+            { min: 101, max: 105, price: 25500 },
+            { min: 106, max: 110, price: 26000 },
+            { min: 111, max: 115, price: 27500 },
+            { min: 116, max: 120, price: 28000 },
+            { min: 121, max: 125, price: 28500 },
+            { min: 126, max: 130, price: 29000 },
+            { min: 131, max: 135, price: 29500 },
+            { min: 136, max: 140, price: 30000 },
+            { min: 141, max: 145, price: 31000 },
+            { min: 146, max: 150, price: 32000 },
+            { min: 151, max: 155, price: 33000 },
+            { min: 156, max: 160, price: 34000 },
+            { min: 161, max: 165, price: 35000 }
+        ];
 
-        // Manipulator Matrix (From Table)
+        // Manipulator Rates Table
         const manipulatorRates = [
             { min: 0, max: 20, cap10: 17000, cap20: 25000 },
             { min: 21, max: 40, cap10: 18500, cap20: 25000 },
@@ -238,11 +249,22 @@
             { min: 91, max: 100, cap10: 28000, cap20: 37000 }
         ];
 
-        let config = JSON.parse(localStorage.getItem('alexlogtech_config')) || defaultConfig;
-        let activeTransport = 'shalanda'; // 'shalanda' or 'manipulator'
-        let manipulatorCapacity = 10; // 10 or 20
+        const defaultConfig = {
+            zsdFee: 2000,
+            freeMinutes: 60,
+            idleHourlyRate: 1500,
+            zones: [
+                { name: "Стандартный маршрут (Без надбавки)", fee: 0 },
+                { name: "Центр (Центральный, Петроградский и др.) (+1 500 ₽)", fee: 1500 },
+                { name: "КАД Север / Курортный р-н (+2 000 ₽)", fee: 2000 }
+            ]
+        };
 
-        // DOM Elements
+        let config = JSON.parse(localStorage.getItem('alexlogtech_config')) || defaultConfig;
+        let activeTransport = 'shalanda';
+        let manipulatorCapacity = 10;
+
+        // Elements
         const tabShalanda = document.getElementById('tab-shalanda');
         const tabManipulator = document.getElementById('tab-manipulator');
         const manipulatorTypeCard = document.getElementById('manipulator-type-card');
@@ -264,20 +286,18 @@
         const copyBtn = document.getElementById('copy-btn');
         const idleInfoText = document.getElementById('idle-info-text');
 
-        // Modal Elements
+        // Settings Elements
         const settingsModal = document.getElementById('settings-modal');
         const openSettingsBtn = document.getElementById('open-settings-btn');
         const closeSettingsBtn = document.getElementById('close-settings-btn');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const resetSettingsBtn = document.getElementById('reset-settings-btn');
 
-        const cfgMinPrice = document.getElementById('cfg-min-price');
-        const cfgPerKm = document.getElementById('cfg-per-km');
         const cfgZsdFee = document.getElementById('cfg-zsd-fee');
         const cfgFreeMinutes = document.getElementById('cfg-free-minutes');
         const cfgIdleRate = document.getElementById('cfg-idle-rate');
 
-        // Tab Switching
+        // Tabs Toggle
         tabShalanda.addEventListener('click', () => {
             activeTransport = 'shalanda';
             tabShalanda.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 bg-blue-600 text-white shadow-md";
@@ -296,7 +316,6 @@
             calculate();
         });
 
-        // Manipulator Sub-tabs
         btnManip10.addEventListener('click', () => {
             manipulatorCapacity = 10;
             btnManip10.className = "py-2.5 px-3 border border-blue-500/50 bg-blue-600/20 text-blue-300 font-bold rounded-xl text-xs transition-all text-center";
@@ -342,24 +361,32 @@
             let rangeText = "";
 
             if (activeTransport === 'shalanda') {
-                basePrice = distance > 0 ? Math.max(config.minPrice, distance * config.perKmRate) : 0;
+                if (distance > 0) {
+                    const row = shalandaRates.find(r => distance >= r.min && distance <= r.max);
+                    if (row) {
+                        basePrice = row.price;
+                        rangeText = `${row.min}-${row.max} км`;
+                    } else if (distance > 165) {
+                        const lastRow = shalandaRates[shalandaRates.length - 1];
+                        basePrice = lastRow.price;
+                        rangeText = `>165 км (договорная)`;
+                    }
+                }
             } else {
-                // Manipulator Logic
                 if (distance > 0) {
                     const row = manipulatorRates.find(r => distance >= r.min && distance <= r.max);
                     if (row) {
                         basePrice = manipulatorCapacity === 10 ? row.cap10 : row.cap20;
                         rangeText = `${row.min}-${row.max} км`;
                     } else if (distance > 100) {
-                        // Beyond 100 km (base 100km rate)
                         const lastRow = manipulatorRates[manipulatorRates.length - 1];
                         basePrice = manipulatorCapacity === 10 ? lastRow.cap10 : lastRow.cap20;
-                        rangeText = `>100 км (базовый тариф)`;
+                        rangeText = `>100 км (договорная)`;
                     }
                 }
             }
 
-            // Idle Time
+            // Idle Calculation
             let idlePrice = 0;
             let idleCoeff = 0;
             let idleMinutes = 0;
@@ -387,16 +414,16 @@
                 return;
             }
 
-            // Report Text Generation
+            // Report Text
             let report = `🚚 Расчет перевозки:\n`;
             if (activeTransport === 'shalanda') {
-                report += `• Транспорт: Шаланда 20 тн\n`;
-                report += `• Расстояние: ${distance} км\n`;
+                report += `• Транспорт: Шаланда 13.6 м (с НДС)\n`;
+                report += `• Расстояние: ${distance} км (${rangeText})\n`;
                 report += `• Базовый тариф: ${basePrice.toLocaleString('ru-RU')} ₽\n`;
             } else {
                 report += `• Транспорт: Манипулятор до ${manipulatorCapacity} тн (с НДС 22%)\n`;
                 report += `• База: Газобетон СК (Грузовой пр. 13)\n`;
-                report += `• Зона: ${distance} км (${rangeText})\n`;
+                report += `• Расстояние: ${distance} км (${rangeText})\n`;
                 report += `• Базовый тариф: ${basePrice.toLocaleString('ru-RU')} ₽\n`;
             }
 
@@ -415,21 +442,17 @@
             reportTextEl.textContent = report;
         }
 
-        // Modal Handlers
+        // Settings Handlers
         openSettingsBtn.addEventListener('click', () => {
-            cfgMinPrice.value = config.minPrice;
-            cfgPerKm.value = config.perKmRate;
             cfgZsdFee.value = config.zsdFee || 2000;
-            cfgFreeMinutes.value = config.freeMinutes;
-            cfgIdleRate.value = config.idleHourlyRate;
+            cfgFreeMinutes.value = config.freeMinutes || 60;
+            cfgIdleRate.value = config.idleHourlyRate || 1500;
             settingsModal.classList.remove('hidden');
         });
 
         closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
 
         saveSettingsBtn.addEventListener('click', () => {
-            config.minPrice = parseFloat(cfgMinPrice.value) || 0;
-            config.perKmRate = parseFloat(cfgPerKm.value) || 0;
             config.zsdFee = parseFloat(cfgZsdFee.value) || 0;
             config.freeMinutes = parseFloat(cfgFreeMinutes.value) || 0;
             config.idleHourlyRate = parseFloat(cfgIdleRate.value) || 0;
@@ -447,7 +470,6 @@
             calculate();
         });
 
-        // Copy
         copyBtn.addEventListener('click', () => {
             const text = reportTextEl.textContent;
             if (text && !text.includes("Укажите расстояние")) {
