@@ -272,22 +272,24 @@
             { min: 91, max: 100, cap10: 28000, cap20: 37000 }
         ];
 
+        const defaultZones = [
+            { name: "Стандартный маршрут (Без надбавки)", fee: 0 },
+            { name: "Центр (Центральный, Адмиралтейский, В.О., Петроградский) (+2 500 ₽)", fee: 2500 }
+        ];
+
         const defaultConfig = {
             zsdFee: 2000,
             freeMinutes: 60,
             idleHourlyRate: 1500,
             shalandaRates: defaultShalandaRates,
             manipulatorRates: defaultManipulatorRates,
-            zones: [
-                { name: "Стандартный маршрут (Без надбавки)", fee: 0 },
-                { name: "Центр (Центральный, Петроградский и др.) (+1 500 ₽)", fee: 1500 },
-                { name: "КАД Север / Курортный р-н (+2 000 ₽)", fee: 2000 }
-            ]
+            zones: defaultZones
         };
 
         let config = JSON.parse(localStorage.getItem('alexlogtech_config')) || defaultConfig;
         
-        // Safety check for rates existence in old saved localstorage
+        // Ensure updated structure in localStorage
+        config.zones = defaultZones;
         if (!config.shalandaRates) config.shalandaRates = defaultShalandaRates;
         if (!config.manipulatorRates) config.manipulatorRates = defaultManipulatorRates;
 
@@ -457,8 +459,7 @@
             report += `• Базовый тариф: ${basePrice.toLocaleString('ru-RU')} ₽\n`;
 
             if (zoneFee > 0) {
-                const selectedZoneText = zoneSelect.options[zoneSelect.selectedIndex].text;
-                report += `• Надбавка: ${zoneFee.toLocaleString('ru-RU')} ₽ (${selectedZoneText.split(' (')[0]})\n`;
+                report += `• Надбавка: ${zoneFee.toLocaleString('ru-RU')} ₽ (Центральные районы)\n`;
             }
             if (zsdToggle.checked) {
                 report += `• Проезд по ЗСД: ${zsdFee.toLocaleString('ru-RU')} ₽\n`;
@@ -525,7 +526,6 @@
             config.freeMinutes = parseFloat(cfgFreeMinutes.value) || 0;
             config.idleHourlyRate = parseFloat(cfgIdleRate.value) || 0;
 
-            // Save currently active rate table inputs
             const shalandaInputs = document.querySelectorAll('.shalanda-rate-input');
             shalandaInputs.forEach(inp => {
                 const idx = parseInt(inp.getAttribute('data-idx'));
@@ -551,6 +551,7 @@
         resetSettingsBtn.addEventListener('click', () => {
             config = { 
                 ...defaultConfig,
+                zones: defaultZones,
                 shalandaRates: JSON.parse(JSON.stringify(defaultShalandaRates)),
                 manipulatorRates: JSON.parse(JSON.stringify(defaultManipulatorRates))
             };
