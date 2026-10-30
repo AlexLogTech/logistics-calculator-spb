@@ -66,7 +66,13 @@
             <!-- Distance & Zone Card -->
             <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-xl backdrop-blur-md space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Расстояние (км)</label>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Расстояние (км)</label>
+                        <button id="open-route-modal-btn" class="text-xs text-blue-400 hover:text-blue-300 flex items-center space-x-1 font-semibold transition-colors">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                            <span>Измерить в Яндекс.Картах</span>
+                        </button>
+                    </div>
                     <div class="relative">
                         <input type="number" id="distance" placeholder="0" min="0" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-lg font-bold text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-medium">км</span>
@@ -160,6 +166,40 @@
         <footer class="mt-6 text-center text-xs text-slate-500">
             AlexLogTech &copy; 2026. PWA Logistics Suite
         </footer>
+    </div>
+
+    <!-- Route Helper Modal -->
+    <div id="route-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+                <h2 class="text-base font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="map" class="w-5 h-5 text-blue-400"></i>
+                    <span>Расчет маршрута в Картах</span>
+                </h2>
+                <button id="close-route-modal-btn" class="text-slate-400 hover:text-white p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Точка А (Погрузка)</label>
+                    <input type="text" id="route-from" value="Санкт-Петербург, Грузовой проезд, 13" placeholder="Введите адрес отгрузки" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Точка Б (Выгрузка / Клиент)</label>
+                    <input type="text" id="route-to" placeholder="Например: Щеглово или адрес объекта" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div class="pt-2 flex space-x-2">
+                <button id="cancel-route-btn" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-semibold">Отмена</button>
+                <button id="open-yandex-maps-btn" class="w-2/3 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    <span>Открыть Яндекс.Карты</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Settings & Rates Editor Modal -->
@@ -288,7 +328,6 @@
 
         let config = JSON.parse(localStorage.getItem('alexlogtech_config')) || defaultConfig;
         
-        // Ensure updated structure in localStorage
         config.zones = defaultZones;
         if (!config.shalandaRates) config.shalandaRates = defaultShalandaRates;
         if (!config.manipulatorRates) config.manipulatorRates = defaultManipulatorRates;
@@ -318,7 +357,16 @@
         const copyBtn = document.getElementById('copy-btn');
         const idleInfoText = document.getElementById('idle-info-text');
 
-        // Modal Elements
+        // Route Modal Elements
+        const routeModal = document.getElementById('route-modal');
+        const openRouteModalBtn = document.getElementById('open-route-modal-btn');
+        const closeRouteModalBtn = document.getElementById('close-route-modal-btn');
+        const cancelRouteBtn = document.getElementById('cancel-route-btn');
+        const openYandexMapsBtn = document.getElementById('open-yandex-maps-btn');
+        const routeFromInput = document.getElementById('route-from');
+        const routeToInput = document.getElementById('route-to');
+
+        // Settings Modal Elements
         const settingsModal = document.getElementById('settings-modal');
         const openSettingsBtn = document.getElementById('open-settings-btn');
         const closeSettingsBtn = document.getElementById('close-settings-btn');
@@ -472,7 +520,24 @@
             reportTextEl.textContent = report;
         }
 
-        // Render Table Editor Rows
+        // Route Modal Handlers
+        openRouteModalBtn.addEventListener('click', () => routeModal.classList.remove('hidden'));
+        closeRouteModalBtn.addEventListener('click', () => routeModal.classList.add('hidden'));
+        cancelRouteBtn.addEventListener('click', () => routeModal.classList.add('hidden'));
+
+        openYandexMapsBtn.addEventListener('click', () => {
+            const from = encodeURIComponent(routeFromInput.value.trim() || "Санкт-Петербург, Грузовой проезд, 13");
+            const to = encodeURIComponent(routeToInput.value.trim());
+            if (!to) {
+                alert("Пожалуйста, укажите адрес выгрузки");
+                return;
+            }
+            const mapsUrl = `https://yandex.ru/maps/?rtext=${from}~${to}&rtt=auto`;
+            window.open(mapsUrl, '_blank');
+            routeModal.classList.add('hidden');
+        });
+
+        // Settings Modal Handlers
         function renderRateEditorRows() {
             rateRowsContainer.innerHTML = '';
             const tableType = editorTableSelect.value;
@@ -510,7 +575,6 @@
 
         editorTableSelect.addEventListener('change', renderRateEditorRows);
 
-        // Settings Modal Handlers
         openSettingsBtn.addEventListener('click', () => {
             cfgZsdFee.value = config.zsdFee || 2000;
             cfgFreeMinutes.value = config.freeMinutes || 60;
